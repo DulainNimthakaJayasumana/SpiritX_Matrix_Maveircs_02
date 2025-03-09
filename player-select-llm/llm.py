@@ -5,23 +5,22 @@ Before running:
 1. Convert your Numbers file to CSV and name it "sample_data.csv" (or update the file name/path below).
 2. Place "sample_data.csv" in the same directory as this script, or update the csv_path variable accordingly.
 3. Install required packages:
-   pip install flask pandas openai
+   pip install flask pandas openai flask-cors
 4. Replace "YOUR_API_KEY" with your actual OpenAI API key.
 """
 
 from flask import Flask, request, jsonify
 import pandas as pd
 from openai import OpenAI
-
-client = OpenAI(api_key="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")
+from flask_cors import CORS  # Import CORS
 import os
 import re
 
-# Set your OpenAI API key here
-  # Replace with your OpenAI API key
-
+# Initialize the OpenAI client with your API key
+client = OpenAI(api_key="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")
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Determine the path to the CSV file relative to this script
 csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_data.csv")
@@ -74,7 +73,10 @@ def build_prompt_for_player(player_data, user_query):
     This prompt includes all provided variables except the computed 'Points'.
     """
     context_lines = []
-    fields = ["Name", "University", "Category", "Total Runs", "Balls Faced", "Innings Played", "Wickets", "Overs Bowled", "Runs Conceded"]
+    fields = [
+        "Name", "University", "Category", "Total Runs", "Balls Faced",
+        "Innings Played", "Wickets", "Overs Bowled", "Runs Conceded"
+    ]
     for field in fields:
         if field in player_data:
             context_lines.append(f"{field}: {player_data[field]}")
@@ -95,13 +97,15 @@ def call_llm(prompt):
     Call the OpenAI API to get a response for the given prompt.
     """
     try:
-        response = client.chat.completions.create(model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": "You are an assistant for a fantasy cricket game."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.5,
-        max_tokens=150)
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "You are an assistant for a fantasy cricket game."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5,
+            max_tokens=150
+        )
         answer = response.choices[0].message.content.strip()
         return answer
     except Exception as e:
@@ -134,7 +138,10 @@ def best_team_suggestion():
     # Sort players by computed Points descending and select the top 11
     best_team_df = players_df.sort_values(by="Points", ascending=False).head(11)
     context_lines = []
-    fields = ["Name", "University", "Category", "Total Runs", "Balls Faced", "Innings Played", "Wickets", "Overs Bowled", "Runs Conceded"]
+    fields = [
+        "Name", "University", "Category", "Total Runs", "Balls Faced",
+        "Innings Played", "Wickets", "Overs Bowled", "Runs Conceded"
+    ]
     for idx, row in best_team_df.iterrows():
         line_parts = []
         for field in fields:
