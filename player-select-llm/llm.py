@@ -11,12 +11,14 @@ Before running:
 
 from flask import Flask, request, jsonify
 import pandas as pd
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key="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")
 import os
 import re
 
 # Set your OpenAI API key here
-openai.api_key = "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"  # Replace with your OpenAI API key
+  # Replace with your OpenAI API key
 
 
 app = Flask(__name__)
@@ -93,16 +95,14 @@ def call_llm(prompt):
     Call the OpenAI API to get a response for the given prompt.
     """
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an assistant for a fantasy cricket game."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.5,
-            max_tokens=150
-        )
-        answer = response["choices"][0]["message"]["content"].strip()
+        response = client.chat.completions.create(model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "You are an assistant for a fantasy cricket game."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.5,
+        max_tokens=150)
+        answer = response.choices[0].message.content.strip()
         return answer
     except Exception as e:
         return f"Error calling LLM: {str(e)}"
