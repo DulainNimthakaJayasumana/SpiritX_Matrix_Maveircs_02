@@ -5,6 +5,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import UserList from './pages/UserList';
 import PlayerDetails from './pages/PlayerDetails';
+import PlayerManagement from './pages/PlayerManagement';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -44,6 +45,14 @@ function App() {
               element={
                 <ProtectedRoute role="user">
                   <PlayerDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/playermanagement"
+              element={
+                <ProtectedRoute role="admin">
+                  <PlayerManagement />
                 </ProtectedRoute>
               }
             />
